@@ -41,7 +41,7 @@ def get_oi_levels():
         resistance = int(df.loc[df['CE_OI'].idxmax(), 'strikePrice'])
         return support, resistance
     except Exception as e:
-        print(f"OI error: {e}")
+        print("OI error: " + str(e))
         return None, None
 
 def get_price_and_ema():
@@ -56,67 +56,52 @@ def get_price_and_ema():
         ema42  = round(float(close.ewm(span=42, adjust=False).mean().iloc[-1]), 1)
         return price, open_p, high, low, ema42
     except Exception as e:
-        print(f"Price error: {e}")
+        print("Price error: " + str(e))
         return None, None, None, None, None
 
 def main():
-    # Check tokens first
     if not BOT_TOKEN or not CHAT_ID:
-        print("❌ BOT_TOKEN or CHAT_ID missing!")
+        print("BOT_TOKEN or CHAT_ID missing!")
         return
 
-    bot = telebot.TeleBot(BOT_TOKEN)  # ← inside main now
+    bot = telebot.TeleBot(BOT_TOKEN)
 
     if not is_market_open():
-        print(f"Market closed at {datetime.now(IST).strftime('%H:%M')} — exiting.")
-        bot.send_message(CHAT_ID, "✅ Bot is working! Market is closed right now.")
+        now = datetime.now(IST).strftime("%H:%M")
+        print("Market closed at " + now + " - exiting.")
+        bot.send_message(CHAT_ID, "Bot is working! Market is closed right now.")
         return
 
     support, resistance             = get_oi_levels()
     price, open_p, high, low, ema42 = get_price_and_ema()
 
     if None in [support, resistance, price, ema42]:
-        bot.send_message(CHAT_ID, "⚠️ Data fetch failed. Will retry in 15 min.")
+        bot.send_message(CHAT_ID, "Data fetch failed. Will retry in 15 min.")
         return
 
-    candle    = "🟩 Bullish" if price >= open_p else "🟥 Bearish"
-    open_sig  = "🟢 Opened ABOVE" if open_p > ema42 else "🔴 Opened BELOW"
-    price_sig = "🟢 Price ABOVE"  if price  > ema42 else "🔴 Price BELOW"
+    candle    = "Bullish"      if price >= open_p else "Bearish"
+    open_sig  = "Opened ABOVE" if open_p > ema42  else "Opened BELOW"
+    price_sig = "Price ABOVE"  if price  > ema42  else "Price BELOW"
     now       = datetime.now(IST).strftime("%H:%M")
 
-    msg = f"""
-📊 *NIFTY 50 | {now} IST (15 Min)*
-━━━━━━━━━━━━━━━━━━━━
+    msg = (
+        "NIFTY 50 | " + now + " IST (15 Min)\n"
+        "------------------------\n"
+        "Candle     : " + candle + "\n"
+        "Open       : " + str(open_p) + "\n"
+        "High       : " + str(high) + "\n"
+        "Low        : " + str(low) + "\n"
+        "Close      : " + str(price) + "\n\n"
+        "OI Levels\n"
+        "Support    : " + str(support) + " (Max PE OI)\n"
+        "Resistance : " + str(resistance) + " (Max CE OI)\n\n"
+        "42 EMA     : " + str(ema42) + "\n"
+        "Open       : " + open_sig + " 42 EMA\n"
+        "Current    : " + price_sig + " 42 EMA\n"
+        "------------------------"
+    )
 
-🕯 Candle  : {candle}
-🔓 Open    : {open_p}
-📈 High    : {high}
-📉 Low     : {low}
-💰 Close   : {price}
-
-📌 *OI Based Levels*
-🛡 Support    : *{support}*  (Max PE OI)
-🧱 Resistance : *{resistance}*  (Max CE OI)
-
-📐 *42 EMA* : {ema42}
-{open_sig} 42 EMA at open
-{price_sig} 42 EMA now
-━━━━━━━━━━━━━━━━━━━━
-"""
-    bot.send_message(CHAT_ID, msg, parse_mode="Markdown")
-    print(f"[{now}] ✅ Alert sent!")
+    bot.send_message(CHAT_ID, msg)
+    print("Alert sent at " + now)
 
 main()
-```
-
-**4.** Click **"Commit changes"**
-
----
-
-## Then Run Workflow Again
-
-
-
-This time you should get a **Telegram message** even on Sunday saying:
-```
-✅ Bot is working! Market is closed right now.
