@@ -1,0 +1,21 @@
+name: Nifty 42 EMA Bot
+
+on:
+  schedule:
+    - cron: '0,15,30,45 4-10 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - run: pip install pytelegrambotapi yfinance pandas pytz requests
+    - name: Run Bot
+      env:
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+      run: python Nifty_42_cron.py
