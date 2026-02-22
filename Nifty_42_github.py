@@ -115,7 +115,7 @@ main()
 
 ## Then Run Workflow Again
 
-**Actions → Nifty 42 EMA Bot → Run workflow**
+
 
 This time you should get a **Telegram message** even on Sunday saying:
 ```
