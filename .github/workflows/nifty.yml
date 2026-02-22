@@ -18,4 +18,4 @@ jobs:
       env:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         CHAT_ID: ${{ secrets.CHAT_ID }}
-      run: python Nifty_42_cron.py
+      run: python Nifty_42_github.py
