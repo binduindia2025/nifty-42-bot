@@ -1,21 +1,37 @@
 name: Nifty 42 EMA Bot
 
 on:
+  workflow_dispatch: # Allows you to manually trigger it from GitHub
   schedule:
-    - cron: '0,15,30,45 4-10 * * 1-5'
-  workflow_dispatch:
+    # Schedule 1: Exactly at 9:15 AM IST (3:45 AM UTC)
+    - cron: '45 3 * * 1-5'
+    
+    # Schedule 2: Every 15 minutes from 9:30 AM to 3:15 PM IST (4:00 AM to 9:45 AM UTC)
+    - cron: '*/15 4-9 * * 1-5'
+    
+    # Schedule 3: Exactly at 3:30 PM IST (10:00 AM UTC)
+    - cron: '0 10 * * 1-5'
 
 jobs:
-  run-bot:
+  run-trading-bot:
     runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - run: pip install pytelegrambotapi yfinance pandas pytz requests
-    - name: Run Bot
-      env:
-        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        CHAT_ID: ${{ secrets.CHAT_ID }}
-      run: python Nifty_42_github.py
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # Or whichever version you prefer
+          
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyTelegramBotAPI pandas yfinance requests pytz
+          
+      - name: Run Nifty Script
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python Nifty_42_github.py
